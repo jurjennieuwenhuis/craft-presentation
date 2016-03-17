@@ -1,0 +1,12 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.selectField({
+    label: "Location of presentations"|t,
+    instructions: "The folder where the presentation templates reside in, relative to Craft's site template folder."|t,
+    id: 'templateLocation',
+    name: 'templateLocation',
+    value: settings.templateLocation,
+    options: templateLocationOptions,
+    translatable: true,
+    errors: settings.getErrors('templateLocation')
+}) }}

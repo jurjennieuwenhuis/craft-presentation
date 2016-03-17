@@ -1,0 +1,16 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.hidden({
+    id: presentation.handle ~ 'handle',
+    name: presentation.handle ~ '[handle]',
+    value: presentation.handle
+}) }}
+
+<div id="{{ presentation.handle }}" class="block-presentation">
+    {{ forms.selectField({
+        id: presentation.handle ~ '-presentation',
+        name: presentation.handle ~ '[template]',
+        value: presentation.template,
+        options: templateOptionList
+    }) }}
+</div>

@@ -1,0 +1,12 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.selectField({
+    label: "The folder containing the presentations"|t,
+    instructions: "The folder where the presentations reside in, relative to the template folder."|t,
+    id: 'basePath',
+    name: 'basePath',
+    value: settings.basePath,
+    options: basePathOptionList,
+    translatable: true,
+    errors: settings.getErrors('basePath')
+}) }}
