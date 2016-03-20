@@ -1,6 +1,8 @@
 <?php
 namespace Craft;
 
+use Presentation\PresentationRendererFactory;
+
 /**
  * Class PresentationService
  *
@@ -8,17 +10,17 @@ namespace Craft;
  */
 class PresentationService extends BaseApplicationComponent
 {
-    public function renderMatrix($matrix, $presentationFieldHandle = null, $blockTypeName = null)
-    {
-        $renderer = Presentation_BlockRenderer::factory($matrix, $presentationFieldHandle, $blockTypeName);
-
-        return $renderer->render();
-    }
-
+    /**
+     * Renders a presentation based on the provided options.
+     *
+     * @param array $options Array containing render options
+     *
+     * @return string
+     */
     public function renderPresentation($options)
     {
-        $renderer = new Presentation_PresentationRenderer(craft()->templates, craft()->path);
+        $factory = PresentationRendererFactory::instance(craft()->templates, craft()->path);
 
-        return $renderer->render($options);
+        return $factory->getRenderer($options)->render();
     }
 }

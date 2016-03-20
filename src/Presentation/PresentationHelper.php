@@ -34,16 +34,10 @@ class PresentationHelper
      */
     public static function getTemplateLocationOptionList($basePath = null)
     {
-        $path = static::getSiteTemplatesPath();
-
-        if (null !== $basePath)
-        {
-            $path .= '/' . trim($basePath, '/');
-        }
+        $path = static::getBasePath($basePath);
 
         return static::getFolderOptionList($path);
     }
-
 
     /**
      * Returns an option list of the presentation template available in the provided template location.
@@ -81,6 +75,20 @@ class PresentationHelper
     }
 
     /**
+     * @todo
+     *
+     * Returns a JSON string containing all the template locations and the presentation template therein.
+     *
+     * @param string $basePath Optional path relative to Craft's template folder.
+     *
+     * @return string
+     */
+    public static function getAllTemplatesJSON($basePath = null)
+    {
+        $path = static::getBasePath($basePath);
+    }
+
+    /**
      * Returns the path service.
      *
      * @return \Craft\PathService
@@ -98,6 +106,26 @@ class PresentationHelper
     private static function getSiteTemplatesPath()
     {
         return rtrim(static::getPathService()->getSiteTemplatesPath(), '/\\');
+    }
+
+    /**
+     * Returns the base path - the root folder of the presentation template folders,
+     * relative to Craft's site template folder.
+     *
+     * @param string $basePath Optional path relative to Craft's template folder.
+     *
+     * @return string
+     */
+    private static function getBasePath($basePath = null)
+    {
+        $path = static::getSiteTemplatesPath();
+
+        if (null !== $basePath)
+        {
+            $path .= '/' . trim($basePath, '/');
+        }
+
+        return $path;
     }
 
     /**
@@ -120,12 +148,8 @@ class PresentationHelper
 
         foreach ($folderContents as $folder)
         {
-            if (!is_dir($folder))
-            {
-                continue;
-            }
-
-            if (IOHelper::isFolderEmpty($folder))
+            // Skip files and empty folders
+            if (!is_dir($folder) || IOHelper::isFolderEmpty($folder))
             {
                 continue;
             }
