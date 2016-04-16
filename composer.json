@@ -11,11 +11,10 @@
             "models",
             "records",
             "services",
-            "twigextensions",
-            "renderers"
+            "twigextensions"
         ],
         "psr-4": {
-            "Presentation\\": "src/Presentation/"
+            "Presentation\\": "common/Presentation/"
         }
     },
     "require-dev": {
