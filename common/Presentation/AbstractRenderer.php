@@ -3,6 +3,7 @@
 namespace Presentation;
 
 use Craft\PathService;
+use Craft\PresentationService;
 use Craft\TemplatesService;
 
 /**
@@ -33,21 +34,29 @@ abstract class AbstractRenderer implements RendererInterface
     private $pathService;
 
     /**
+     * @var PresentationService
+     */
+    private $presentationService;
+
+    /**
      * Class constructor.
      *
      * @param TemplatesService $templatesService
      * @param PathService $pathService
+     * @param PresentationService $presentationService
      * @param object|string $presentation
      * @param array $arguments
      */
     public function __construct(
         TemplatesService $templatesService,
         PathService $pathService,
+        PresentationService $presentationService,
         $presentation,
         array $arguments = array())
     {
-        $this->templatesService = $templatesService ?: craft()->templates;
-        $this->pathService = $pathService ?: craft()->path;
+        $this->templatesService = $templatesService ?: \Craft\craft()->templates;
+        $this->pathService = $pathService ?: \Craft\craft()->path;
+        $this->presentationService = $presentationService ?: \Craft\craft()->presentation;
         $this->presentation = $presentation;
         $this->setArguments($arguments);
     }
@@ -80,7 +89,8 @@ abstract class AbstractRenderer implements RendererInterface
 
         if (!empty($template))
         {
-            $html .= $this->templatesService->render($template, $this->arguments);
+            $basePath = $this->presentationService->getPresentationBasePath();
+            $html .= $this->templatesService->render($basePath . $template, $this->arguments);
         }
 
         return $html;

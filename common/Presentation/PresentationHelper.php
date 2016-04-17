@@ -42,11 +42,12 @@ class PresentationHelper
     /**
      * Returns an option list of the presentation template available in the provided template location.
      *
-     * @param string $templateLocation The folder containing the templates relative to Craft's site templates folder.
+     * @param string $templateLocation The folder containing the templates relative to the presentation base path.
+     * @param string $basePath The base path.
      *
      * @return array
      */
-    public static function getTemplateOptionList($templateLocation)
+    public static function getTemplateOptionList($templateLocation, $basePath)
     {
         $optionList = [];
 
@@ -56,7 +57,7 @@ class PresentationHelper
         }
 
         // get list of templates within the template location
-        $path = static::getSiteTemplatesPath() . '/' . $templateLocation;
+        $path = static::getSiteTemplatesPath() . '/' . $basePath . '/' . $templateLocation;
 
         $templatePaths = IOHelper::getFolderContents($path, false, '\.(twig|html)$');
 
@@ -116,7 +117,7 @@ class PresentationHelper
      *
      * @return string
      */
-    private static function getBasePath($basePath = null)
+    public static function getBasePath($basePath = null)
     {
         $path = static::getSiteTemplatesPath();
 
@@ -156,7 +157,7 @@ class PresentationHelper
 
             // Get the path relative to Craft's site template folder. We will use it to store
             // the path to the presentation template.
-            $relPath = str_replace(static::getPathService()->getSiteTemplatesPath(), '', $folder);
+            $relPath = str_replace($path, '', $folder);
 
             // Remove any trailing slashes
             $relPath = trim($relPath, '/');

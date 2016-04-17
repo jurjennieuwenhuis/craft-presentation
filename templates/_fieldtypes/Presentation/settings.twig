@@ -6,7 +6,40 @@
     id: 'templateLocation',
     name: 'templateLocation',
     value: settings.templateLocation,
-    options: templateLocationOptions,
+    options: {'': 'Select a location'|t}|merge(templateLocationOptions),
     translatable: true,
     errors: settings.getErrors('templateLocation')
 }) }}
+
+
+{{ forms.checkboxField({
+    label: "Disable user input"|t,
+    instructions: "The user can not select a presentation from the dropdown. WARNING: this means that the presentation of all entries or blocks using this field will be set to the default"|t,
+    name: 'disableUserInput',
+    checked: settings.disableUserInput,
+    class: 'presentation-default-template-toggle'
+}) }}
+
+
+{{ forms.checkboxField({
+    label: "Use default template"|t,
+    instructions: "Set the default presentation"|t,
+    name: 'useDefaultTemplate',
+    checked: settings.useDefaultTemplate,
+    class: 'presentation-default-template-toggle'
+}) }}
+
+{#
+## TODO: retrieve available templates based on selected location
+#}
+<div id="defaultTemplateContainer" class="presentation-default-template-container nested-fields{% if not settings.useDefaultTemplate and not settings.disableUserInput %} hidden{% endif %}">
+    {{ forms.selectField({
+        label: "Default Presentation"|t,
+        id: 'defaultTemplate',
+        name: 'defaultTemplate',
+        value: settings.defaultTemplate,
+        options: {'': 'Select a presentation'|t}|merge(templateOptionList),
+        errors: settings.getErrors('defaultTemplate')
+    }) }}
+</div>
+

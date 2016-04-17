@@ -19,8 +19,22 @@ class PresentationService extends BaseApplicationComponent
      */
     public function renderPresentation($options)
     {
-        $factory = PresentationRendererFactory::instance(craft()->templates, craft()->path);
+        $factory = PresentationRendererFactory::instance(craft()->templates, craft()->path, craft()->presentation);
 
         return $factory->getRenderer($options)->render();
+    }
+
+    /**
+     * Returns the presentation base path.
+     *
+     * @return string
+     */
+    public function getPresentationBasePath()
+    {
+        $pluginSettings = craft()->plugins->getPlugin('presentation')->getSettings();
+
+        $basePath = $pluginSettings->basePath;
+
+        return trim($basePath . '/');
     }
 }

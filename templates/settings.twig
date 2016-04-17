@@ -6,7 +6,7 @@
     id: 'basePath',
     name: 'basePath',
     value: settings.basePath,
-    options: basePathOptionList,
+    options: {'': 'Use template root path'|t}|merge(basePathOptionList),
     translatable: true,
     errors: settings.getErrors('basePath')
 }) }}

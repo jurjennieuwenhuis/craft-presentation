@@ -6,6 +6,7 @@ use Craft\EntryModel;
 use Craft\MatrixBlockModel;
 use Craft\PathService;
 use Craft\Presentation_PresentationModel;
+use Craft\PresentationService;
 use Craft\TemplatesService;
 use Presentation\Renderer\EntryRenderer;
 use Presentation\Renderer\MatrixBlockRenderer;
@@ -35,21 +36,27 @@ class PresentationRendererFactory
     private $pathService;
 
     /**
+     * @var PresentationService
+     */
+    private $presentationService;
+
+    /**
      * Create or get instance of class.
      *
      * @param TemplatesService $templatesService
      * @param PathService $pathService
+     * @param PresentationService $presentationService
      *
      * @return PresentationRendererFactory
      */
-    public static function instance(TemplatesService $templatesService, PathService $pathService)
+    public static function instance(TemplatesService $templatesService = null, PathService $pathService = null, PresentationService $presentationService = null)
     {
         if (null !== static::$instance)
         {
             return static::$instance;
         }
 
-        return static::$instance = new self($templatesService, $pathService);
+        return static::$instance = new self($templatesService, $pathService, $presentationService);
     }
 
     /**
@@ -57,11 +64,13 @@ class PresentationRendererFactory
      *
      * @param TemplatesService $templatesService
      * @param PathService $pathService
+     * @param PresentationService $presentationService
      */
-    public function __construct(TemplatesService $templatesService, PathService $pathService)
+    public function __construct(TemplatesService $templatesService, PathService $pathService, PresentationService $presentationService)
     {
-        $this->templatesService = $templatesService ?: craft()->templates;
-        $this->pathService = $pathService ?: craft()->path;
+        $this->templatesService = $templatesService ?: \Craft\craft()->templates;
+        $this->pathService = $pathService ?: \Craft\craft()->path;
+        $this->presentationService = $presentationService ?: \Craft\craft()->presentation;
     }
 
     /**
@@ -79,19 +88,19 @@ class PresentationRendererFactory
 
         if ($presentation instanceof Presentation_PresentationModel)
         {
-            return new PresentationRenderer($this->templatesService, $this->pathService, $presentation, $options);
+            return new PresentationRenderer($this->templatesService, $this->pathService, $this->presentationService, $presentation, $options);
         }
         else if ($presentation instanceof EntryModel)
         {
-            return new EntryRenderer($this->templatesService, $this->pathService, $presentation, $options);
+            return new EntryRenderer($this->templatesService, $this->pathService, $this->presentationService, $presentation, $options);
         }
         else if ($presentation instanceof MatrixBlockModel)
         {
-            return new MatrixBlockRenderer($this->templatesService, $this->pathService, $presentation, $options);
+            return new MatrixBlockRenderer($this->templatesService, $this->pathService, $this->presentationService, $presentation, $options);
         }
         else if (is_string($presentation))
         {
-            return new StringRenderer($this->templatesService, $this->pathService, $presentation, $options);
+            return new StringRenderer($this->templatesService, $this->pathService, $this->presentationService, $presentation, $options);
         }
 
         throw new \Craft\Exception(\Craft\Craft::t('No renderer available for provided object'));
