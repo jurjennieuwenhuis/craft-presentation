@@ -9,8 +9,9 @@
 <div id="{{ presentation.handle }}" class="block-presentation">
     {{ forms.selectField({
         id: presentation.handle ~ '-presentation',
+        instructions: 'Select a presentation for this entry'|t,
         name: presentation.handle ~ '[template]',
         value: presentation.template,
-        options: templateOptionList
+        options: {'': 'Select a presentation'|t}|merge(templateOptionList)
     }) }}
 </div>
