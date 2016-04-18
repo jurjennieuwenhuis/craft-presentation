@@ -96,71 +96,25 @@ class Presentation_PresentationFieldType extends BaseFieldType
         ]);
     }
 
+    /**
+     * @param Presentation_PresentationModel $value
+     *
+     * @return true|string
+     */
+    public function validate($value)
+    {
+        $template = $value->getAttribute('template');
+
+        if (empty($template) || (is_numeric($template) && intval($template) == 0))
+        {
+            return 'Template cannot be empty.';
+        }
+
+        return true;
+    }
+
     public function onBeforeSave()
     {
-        /** @var FieldModel $field */
-        $field = $this->model;
-
-        // No need to update if field is new
-        if ($field->isNew())
-        {
-            return;
-        }
-
-        // get new settings
-        $newSettings = $this->getSettings()->getAttributes();
-
-        // do not continue if template is empty
-        if (empty($newSettings['defaultTemplate']))
-        {
-            return;
-        }
-
-        $fieldId = $field->id;
-
-        $fieldRecord = FieldRecord::model()->findById($fieldId);
-
-        // get original settings
-        $settings = $fieldRecord->getAttribute('settings');
-
-        // Diff the settings, and return the updated values
-        $diff = array_diff_assoc($newSettings, $settings);
-
-        // Conditions to update entries
-        $disableUserInputActivated = (isset($diff['disableUserInput']) && $diff['disableUserInput'] == 1);
-        $disableUserInputAndDefaultTemplateChanged = ($newSettings['disableUserInput'] == 1 && isset($diff['defaultTemplate']));
-
-        // Do not continue of conditions are not met
-        if (!$disableUserInputActivated && !$disableUserInputAndDefaultTemplateChanged)
-        {
-            return;
-        }
-
-        // Find all field instances of current field model,
-        // and set the template to the default.
-        $criteria = craft()->elements->getCriteria(ElementType::Entry);
-
-        $fieldHandle = $field->getAttribute('handle');
-
-        $criteria->search = "{$fieldHandle}:*";
-
-        /** @var EntryModel[] $entries */
-        $entries = $criteria->find();
-
-        foreach ($entries as $entry)
-        {
-            /** @var Presentation_PresentationModel $presentationModel */
-            $presentationModel = $entry->getContent()->getAttribute($fieldHandle);
-
-            if ($presentationModel->template != $newSettings['defaultTemplate'])
-            {
-                $presentationModel->template = $newSettings['defaultTemplate'];
-
-                $entry->getContent()->setAttribute($fieldHandle, $presentationModel);
-
-                craft()->entries->saveEntry($entry);
-
-            }
-        }
+        PresentationHelper::updateDefaultTemplate($this);
     }
 }

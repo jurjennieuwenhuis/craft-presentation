@@ -2,7 +2,14 @@
 
 namespace Presentation;
 
+use Craft\ElementType;
+use Craft\EntryModel;
+use Craft\FieldModel;
+use Craft\FieldRecord;
 use Craft\IOHelper;
+use Craft\MatrixBlockModel;
+use Craft\Presentation_PresentationFieldType;
+use Craft\Presentation_PresentationModel;
 
 /**
  * Class PresentationHelper
@@ -219,5 +226,116 @@ class PresentationHelper
         $folderName = trim($folderName, '/');
 
         return str_replace('/', '.', $folderName);
+    }
+
+    /**
+     * Updates the default templates in all entries and matrix blocks.
+     *
+     * @param Presentation_PresentationFieldType $fieldType
+     * @return void
+     */
+    public static function updateDefaultTemplate(Presentation_PresentationFieldType $fieldType)
+    {
+        /** @var FieldModel $field */
+        $field = $fieldType->model;
+
+        // No need to update if field is new
+        if ($field->isNew())
+        {
+            return;
+        }
+
+        // get new settings
+        $newSettings = $fieldType->getSettings()->getAttributes();
+
+        // do not continue if template is empty
+        if (empty($newSettings['defaultTemplate']))
+        {
+            return;
+        }
+
+        $fieldId = $field->id;
+
+        $fieldRecord = FieldRecord::model()->findById($fieldId);
+
+        // get original settings
+        $settings = $fieldRecord->getAttribute('settings');
+
+        // Diff the settings, and return the updated values
+        $diff = array_diff_assoc($newSettings, $settings);
+
+        // Conditions to update entries
+        $disableUserInputActivated = (isset($diff['disableUserInput']) && $diff['disableUserInput'] == 1);
+        $disableUserInputAndDefaultTemplateChanged = ($newSettings['disableUserInput'] == 1 && isset($diff['defaultTemplate']));
+
+        // Do not continue of conditions are not met
+        if (!$disableUserInputActivated && !$disableUserInputAndDefaultTemplateChanged)
+        {
+            return;
+        }
+
+        // Get the context of the field. If it is contained within a matrix field the format is like 'matrixBlockType:1'.
+        // The number denominates the position of the block within the matrix.
+        // If it's assigned to an entry the context is 'global'
+        $context = $field->getAttribute('context');
+
+
+        if ($context == 'global')
+        {
+            // Find all field instances of current field model,
+            // and set the template to the default.
+            $criteria = \Craft\craft()->elements->getCriteria(ElementType::Entry);
+
+            $fieldHandle = $field->getAttribute('handle');
+
+            $criteria->search = "{$fieldHandle}:*";
+
+            /** @var EntryModel[] $entries */
+            $entries = $criteria->find();
+
+            foreach ($entries as $entry)
+            {
+                /** @var Presentation_PresentationModel $presentationModel */
+                $presentationModel = $entry->getContent()->getAttribute($fieldHandle);
+
+                if ($presentationModel->template != $newSettings['defaultTemplate'])
+                {
+                    $presentationModel->template = $newSettings['defaultTemplate'];
+
+                    $entry->getContent()->setAttribute($fieldHandle, $presentationModel);
+
+                    \Craft\craft()->entries->saveEntry($entry);
+
+                }
+            }
+        }
+        elseif (strpos($context, 'matrixBlockType') === 0)
+        {
+            $criteria = \Craft\craft()->elements->getCriteria(ElementType::MatrixBlock);
+
+            $fieldHandle = $field->getAttribute('handle');
+
+            $criteria->search = "{$fieldHandle}:*";
+
+            /** @var MatrixBlockModel[] $blocks */
+            $blocks = $criteria->find();
+
+            foreach ($blocks as $block)
+            {
+                /** @var Presentation_PresentationModel $presentationModel */
+                $presentationModel = $block->getContent()->getAttribute($fieldHandle);
+
+                if ($presentationModel->template != $newSettings['defaultTemplate'])
+                {
+                    $presentationModel->template = $newSettings['defaultTemplate'];
+
+                    $block->getContent()->setAttribute($fieldHandle, $presentationModel);
+
+                    \Craft\craft()->matrix->saveBlock($block);
+                }
+            }
+
+            $test = null;
+        }
     }
 }
